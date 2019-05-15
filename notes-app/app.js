@@ -1,4 +1,7 @@
-const fs = require('fs');
+const validator = require('validator');
+const getNotes = require('./notes.js');
 
-fs.writeFileSync('notes.txt', 'My name is Misael.');
-fs.appendFileSync('notes.txt', 'This text is appended!');
+console.log(getNotes());
+
+console.log(validator.isEmail('cmburboa@gmail.com'));
+console.log(validator.isURL('http:///mead.io'));
