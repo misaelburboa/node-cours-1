@@ -17,9 +17,7 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
         return console.log('Unable to connect to database');
     }
 
-    const db = client.db(databaseName);
-
- /*   
+    const db = client.db(databaseName);  
     // C SETTING DATA
 
     db.collection('users').insertOne({
@@ -123,7 +121,7 @@ MongoClient.connect(connectionURL, { useNewUrlParser: true }, (error, client) =>
        console.log(result);
    }).catch(error => {
        console.log(error);
-   });*/
+   });
 
    db.collection('tasks').deleteOne({
        description: 'shower dog'
