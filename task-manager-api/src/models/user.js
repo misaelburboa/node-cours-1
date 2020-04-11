@@ -48,6 +48,8 @@ const userSchema = new mongoose.Schema({
             required: true,
         }
     }]
+}, {
+    timestamps: true
 });
 
 userSchema.virtual('tasks', {
@@ -56,6 +58,10 @@ userSchema.virtual('tasks', {
     foreignField: 'owner'
 });
 
+// This is used for removing password and tokens from the response so that is not exposed
+//  If the Object in this case User, has a toJSON() method, it's responsible to define what data will be serialized
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
+//  This is due to express uses the JSON.stringify() function for responses
 userSchema.methods.toJSON = function() {
     const user = this;
     const userObject = user.toObject();
@@ -93,7 +99,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
     return user;
 };
 
-// Hash the plain text password before saving
+// Middleware intended to hash the plain text password before saving
 userSchema.pre('save', async function(next) {
     const user = this;
     if (user.isModified('password')) {
@@ -103,7 +109,8 @@ userSchema.pre('save', async function(next) {
     next();
 });
 
-// Delete user tasks when user is removed
+// Delete user tasks when user is removed, this is kind of an event or hook but int his case
+// is called a middleware
 userSchema.pre('remove', async function(next) {
     const user = this;
     await Task.deleteMany({ owner: user._id });
