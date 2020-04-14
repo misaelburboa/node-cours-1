@@ -77,7 +77,6 @@ router.patch('/me', auth, async (req, res) => {
 
 router.delete('/me', auth, async (req, res) => {
     try {
-        // const user = await User.findByIdAndDelete(req.user._id);
         await req.user.remove();
         sendCancelationEmail(req.user.email, req.user.name);
         res.send(req.user);
