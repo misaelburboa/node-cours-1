@@ -21,11 +21,14 @@ beforeEach(async () => {
 });
 
 test('Should signup a new user', async () => {
-    const response = await request(app).post('/users').send({
+    const response = await request(app)
+    .post('/users')
+    .send({
         name: "UserX",
         email: 'userx@testing.com',
         password: 'Blue410!'
-    }).expect(201);
+    })
+    .expect(201);
 
     // Asserts the user was created in database
     const user = await User.findById(response.body.user._id);
@@ -43,20 +46,26 @@ test('Should signup a new user', async () => {
 });
 
 test('Should login existing user', async () => {
-    const response = await request(app).post('/users/login').send({
-        email: userOne.email,
-        password: userOne.password
-    }).expect(200);
+    const response = await request(app)
+        .post('/users/login')
+        .send({
+            email: userOne.email,
+            password: userOne.password
+        })
+        .expect(200);
 
     const user = await User.findById(userOneId);
     expect(response.body.token).toBe(user.tokens[1].token);
 });
 
 test('Should not login nonexisting user', async () => {
-    await request(app).post('/users/login').send({
-        email: 'testingnotexisting@testing.com',
-        password: '123123123'
-    }).expect(400);
+    await request(app)
+        .post('/users/login')
+        .send({
+            email: 'testingnotexisting@testing.com',
+            password: '123123123'
+        })
+        .expect(400);
 });
 
 test('Should get profile for user', async () => {
@@ -90,4 +99,42 @@ test('Should not delete account for unauthenticated user', async () => {
         .delete('/users/me')
         .send()
         .expect(401);
+});
+
+test('Should upload avatar image', async () => {
+    await request(app)
+        .post('/users/me/avatar')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .attach('avatar', 'tests/fixtures/profile-pic.jpg')
+        .expect(200);
+
+    const user = await User.findById(userOne._id);
+    expect(user.avatar).toEqual(expect.any(Buffer));
+});
+
+test('Should update valid user fields', async () => {
+    const updatedData = {
+        name: 'UserY'
+    };
+
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send(updatedData)
+        .expect(200);
+
+    const user = await User.findById(userOne._id);
+    expect(user.name).toEqual('UserY');
+});
+
+test('Should not update invalid user fields', async () => {
+    const updatedData = {
+        address: 'Evergreen 123, Springfield USA'
+    };
+
+    await request(app)
+        .patch('/users/me')
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .send(updatedData)
+        .expect(400);
 });
